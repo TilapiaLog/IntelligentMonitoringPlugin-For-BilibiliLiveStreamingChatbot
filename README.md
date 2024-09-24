@@ -1,0 +1,2 @@
+# IntelligentMonitoringPlugin-For-BilibiliLiveStreamingChatbot
+哔哩哔哩直播间弹幕关键词监管插件
