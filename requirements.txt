@@ -1,0 +1,5 @@
+Flask==2.0.3
+aiohttp==3.8.1
+blivedm==1.0.0  # 请根据实际使用的版本进行调整
+wordcloud==1.8.2
+matplotlib==3.5.1

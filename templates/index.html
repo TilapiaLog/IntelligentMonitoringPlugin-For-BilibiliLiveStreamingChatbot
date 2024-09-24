@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>弹幕实时显示</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #121212;
+            color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        h1 {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 24px;
+            color: #ffcc00;
+        }
+        .textarea-container {
+            width: 80%;
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        textarea {
+            width: 100%;
+            height: 250px; /* 设置高度 */
+            background-color: #1e1e1e;
+            color: #ffffff;
+            border: 1px solid #444;
+            border-radius: 8px;
+            padding: 10px;
+            resize: none;
+            font-size: 16px;
+            overflow-y: auto;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+            transition: border-color 0.3s;
+        }
+        textarea:focus {
+            border-color: #ffcc00;
+            outline: none;
+        }
+        ::placeholder {
+            color: #888;
+        }
+        #wordcloud {
+            text-align: center;
+            margin: 20px 0;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="textarea-container">
+        <label for="normal-danmu">正常弹幕:</label>
+        <textarea id="normal-danmu" readonly placeholder="正常弹幕..."></textarea>
+    </div>
+    
+    <div class="textarea-container">
+        <label for="violation-danmu">违规弹幕:</label>
+        <textarea id="violation-danmu" readonly placeholder="违规弹幕..."></textarea>
+    </div>
+    
+    <div class="textarea-container">
+        <label for="violation-counts">违规用户名计数:</label>
+        <textarea id="violation-counts" readonly placeholder="违规用户名计数..."></textarea>
+    </div>
+
+    <h2>词云</h2>
+    <div id="wordcloud">
+        <img id="wordcloud-image" src="" alt="词云图像" />
+    </div>
+    
+    <script>
+        async function fetchDanmu() {
+            const response = await fetch('/danmu');
+            const data = await response.json();
+            const normalTextArea = document.getElementById('normal-danmu');
+            const violationTextArea = document.getElementById('violation-danmu');
+
+            // 更新正常弹幕
+            normalTextArea.value = data.normal.join('\n');
+            // 更新违规弹幕
+            violationTextArea.value = data.violation.join('\n');
+        }
+
+        async function fetchViolationCounts() {
+            const response = await fetch('/violation_counts');
+            const data = await response.json();
+            const violationCountsTextArea = document.getElementById('violation-counts');
+
+            // 更新违规用户名计数
+            let counts = '';
+            for (const [username, count] of Object.entries(data)) {
+                counts += `${username}: ${count}\n`;
+            }
+            violationCountsTextArea.value = counts;
+        }
+
+        async function fetchWordcloud() {
+            const response = await fetch('/wordcloud');
+            const blob = await response.blob();
+            const img = document.getElementById('wordcloud-image');
+            img.src = URL.createObjectURL(blob);
+        }
+
+        setInterval(fetchDanmu, 500); // 每0.5秒获取一次弹幕
+        setInterval(fetchViolationCounts, 5000); // 每5秒获取一次违规用户名计数
+        setInterval(fetchWordcloud, 10000); // 每10秒获取一次词云
+
+        // 页面加载时自动获取弹幕、违规计数和词云
+        window.onload = () => {
+            fetchDanmu();
+            fetchViolationCounts();
+            fetchWordcloud();
+        };
+    </script>
+    
+</body>
+</html>
